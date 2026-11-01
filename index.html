@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>Cyber Titan - Web Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <style>
+        body { background-color: #050811; color: #00f0ff; font-family: 'Courier New', monospace; padding: 20px; }
+        .panel { border: 1px solid #1e3054; padding: 15px; margin-bottom: 20px; background: #0a101f; }
+        button { background: #059669; color: white; border: none; padding: 10px 15px; cursor: pointer; }
+        button:hover { background: #047857; }
+        #log { height: 150px; overflow-y: auto; background: #000; padding: 10px; color: #00ff9d; }
+    </style>
+</head>
+<body>
+
+    <h1>⚡ CYBER TITAN // MULTIPLAYER WEB EDITION</h1>
+
+    <!-- قسم المتجر (المصلّح) -->
+    <div class="panel">
+        <h3>🛒 المتجر السري (Shop)</h3>
+        <p>الرصيد الحالي: $<span id="credits">1000</span></p>
+        <button onclick="buyItem('cpu')">شراء معالج اختراق (CPU)</button>
+        <button onclick="buyItem('ai_bot')">شراء روبوت تعدين (AI Bot)</button>
+    </div>
+
+    <!-- قسم اللعب الجماعي -->
+    <div class="panel">
+        <h3>⚔️ ساحة الحرب السيبرانية (PvP)</h3>
+        <input type="text" id="username" placeholder="اسمك السري (Username)">
+        <input type="text" id="match_id" placeholder="رقم الغرفة (Room ID)">
+        <select id="role">
+            <option value="Red Team">🔴 مهاجم (Red Team)</option>
+            <option value="Blue Team">🔵 مدافع (Blue Team)</option>
+        </select>
+        <button onclick="joinMatch()">دخول المعركة</button>
+        
+        <br><br>
+        <button onclick="attackNode('Gateway-01')">⚡ إطلاق استغلال (Attack Node 1)</button>
+    </div>
+
+    <!-- الرادار اللحظي -->
+    <div class="panel">
+        <h3>📡 رادار المعركة اللحظي</h3>
+        <div id="log"></div>
+    </div>
+
+    <script>
+        // الاتصال بسيرفر اللعب الجماعي
+        const socket = io();
+
+        // 1. نظام اللعب الجماعي (استقبال الأحداث من السيرفر)
+        socket.on('match_notification', function(data) {
+            logMessage('🔔 ' + data.message);
+        });
+
+        socket.on('node_under_attack', function(data) {
+            logMessage('💥 ' + data.message);
+        });
+
+        // إرسال طلب انضمام للغرفة
+        function joinMatch() {
+            const user = document.getElementById('username').value;
+            const room = document.getElementById('match_id').value;
+            const role = document.getElementById('role').value;
+            socket.emit('join_match', { username: user, match_id: room, role: role });
+        }
+
+        // إرسال هجوم
+        function attackNode(nodeId) {
+            const user = document.getElementById('username').value;
+            const room = document.getElementById('match_id').value;
+            socket.emit('attack_node', { username: user, match_id: room, node_id: nodeId });
+        }
+
+        // 2. نظام المتجر (ربط مع الـ API الآمن)
+        function buyItem(itemKey) {
+            const user = document.getElementById('username').value || "guest"; // للتجربة فقط
+            fetch('/api/buy_upgrade', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username: user, item_key: itemKey })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    document.getElementById('credits').innerText = data.new_credits;
+                    logMessage(`✅ تمت الترقية بنجاح! المستوى الجديد: ${data.new_tier}`);
+                } else {
+                    logMessage(`❌ فشل الشراء: ${data.message}`);
+                }
+            });
+        }
+
+        function logMessage(msg) {
+            const logDiv = document.getElementById('log');
+            logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+        }
+    </script>
+</body>
+</html>
