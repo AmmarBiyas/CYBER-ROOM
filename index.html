@@ -2,26 +2,28 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Cyber Titan - Web Edition</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link rel="stylesheet" href="style.css">
     <style>
         body { background-color: #050811; color: #00f0ff; font-family: 'Courier New', monospace; padding: 20px; }
-        .panel { border: 1px solid #1e3054; padding: 15px; margin-bottom: 20px; background: #0a101f; }
-        button { background: #059669; color: white; border: none; padding: 10px 15px; cursor: pointer; }
+        .panel { border: 1px solid #1e3054; padding: 15px; margin-bottom: 20px; background: #0a101f; border-radius: 6px; }
+        button { background: #059669; color: white; border: none; padding: 10px 15px; cursor: pointer; border-radius: 4px; font-weight: bold; margin: 4px; }
         button:hover { background: #047857; }
-        #log { height: 150px; overflow-y: auto; background: #000; padding: 10px; color: #00ff9d; }
+        input, select { background: #0d1527; color: #00f0ff; border: 1px solid #1e3054; padding: 8px; margin: 4px; border-radius: 4px; }
+        #log { height: 180px; overflow-y: auto; background: #000; padding: 10px; color: #00ff9d; border: 1px solid #1e3054; font-size: 13px; }
     </style>
 </head>
 <body>
 
-    <h1>⚡ CYBER TITAN // MULTIPLAYER WEB EDITION</h1>
+    <h1>⚡ CYBER TITAN // SIMULATOR EDITION</h1>
 
-    <!-- قسم المتجر (المصلّح) -->
+    <!-- قسم المتجر -->
     <div class="panel">
         <h3>🛒 المتجر السري (Shop)</h3>
         <p>الرصيد الحالي: $<span id="credits">1000</span></p>
-        <button onclick="buyItem('cpu')">شراء معالج اختراق (CPU)</button>
-        <button onclick="buyItem('ai_bot')">شراء روبوت تعدين (AI Bot)</button>
+        <button onclick="buyItem('cpu', 300)">شراء معالج اختراق ($300)</button>
+        <button onclick="buyItem('ai_bot', 500)">شراء روبوت تعدين ($500)</button>
     </div>
 
     <!-- قسم اللعب الجماعي -->
@@ -46,59 +48,41 @@
     </div>
 
     <script>
-        // الاتصال بسيرفر اللعب الجماعي
-        const socket = io();
-
-        // 1. نظام اللعب الجماعي (استقبال الأحداث من السيرفر)
-        socket.on('match_notification', function(data) {
-            logMessage('🔔 ' + data.message);
-        });
-
-        socket.on('node_under_attack', function(data) {
-            logMessage('💥 ' + data.message);
-        });
-
-        // إرسال طلب انضمام للغرفة
-        function joinMatch() {
-            const user = document.getElementById('username').value;
-            const room = document.getElementById('match_id').value;
-            const role = document.getElementById('role').value;
-            socket.emit('join_match', { username: user, match_id: room, role: role });
-        }
-
-        // إرسال هجوم
-        function attackNode(nodeId) {
-            const user = document.getElementById('username').value;
-            const room = document.getElementById('match_id').value;
-            socket.emit('attack_node', { username: user, match_id: room, node_id: nodeId });
-        }
-
-        // 2. نظام المتجر (ربط مع الـ API الآمن)
-        function buyItem(itemKey) {
-            const user = document.getElementById('username').value || "guest"; // للتجربة فقط
-            fetch('/api/buy_upgrade', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ username: user, item_key: itemKey })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    document.getElementById('credits').innerText = data.new_credits;
-                    logMessage(`✅ تمت الترقية بنجاح! المستوى الجديد: ${data.new_tier}`);
-                } else {
-                    logMessage(`❌ فشل الشراء: ${data.message}`);
-                }
-            });
-        }
+        let currentCredits = 1000;
 
         function logMessage(msg) {
             const logDiv = document.getElementById('log');
             logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
             logDiv.scrollTop = logDiv.scrollHeight;
         }
+
+        function joinMatch() {
+            const user = document.getElementById('username').value.trim() || "Agent_X";
+            const room = document.getElementById('match_id').value.trim() || "ROOM-101";
+            const role = document.getElementById('role').value;
+            
+            logMessage(`✅ تم الانضمام للغرفة [${room}] كـ ${role} بواسطة العميل (${user})`);
+        }
+
+        function attackNode(nodeId) {
+            const user = document.getElementById('username').value.trim() || "Agent_X";
+            logMessage(`💥 قام [${user}] بتنفيذ هجوم استغلال على العقدة [${nodeId}]! تم اختراق الجدار الناري بنجاح.`);
+        }
+
+        function buyItem(itemName, price) {
+            if (currentCredits >= price) {
+                currentCredits -= price;
+                document.getElementById('credits').innerText = currentCredits;
+                logMessage(`✅ تمت ترقية العتاد بنجاح: تم تفعيل [${itemName.toUpperCase()}]! الرصيد المتبقي: $${currentCredits}`);
+            } else {
+                logMessage(`❌ فشل الشراء: رصيدك غير كافٍ لاقتناء [${itemName.toUpperCase()}]!`);
+            }
+        }
+
+        window.onload = function() {
+            logMessage("🟢 تم تشغيل أنظمة CYBER TITAN بنجاح... جاهز للأوامر.");
+        };
     </script>
+    <script src="script.js"></script>
 </body>
 </html>
-<script src="script.js"></script>
-<link rel="stylesheet" href="style.css">
