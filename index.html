@@ -22,11 +22,11 @@
     <div class="panel">
         <h3>🛒 المتجر السري (Shop)</h3>
         <p>الرصيد الحالي: $<span id="credits">1000</span></p>
-        <button onclick="buyItem('cpu', 300)">شراء معالج اختراق ($300)</button>
-        <button onclick="buyItem('ai_bot', 500)">شراء روبوت تعدين ($500)</button>
+        <button onclick="buyItem('معالج اختراق (CPU)', 300)">شراء معالج اختراق ($300)</button>
+        <button onclick="buyItem('روبوت تعدين (AI Bot)', 500)">شراء روبوت تعدين ($500)</button>
     </div>
 
-    <!-- قسم اللعب الجماعي -->
+    <!-- قسم المعركة -->
     <div class="panel">
         <h3>⚔️ ساحة الحرب السيبرانية (PvP)</h3>
         <input type="text" id="username" placeholder="اسمك السري (Username)">
@@ -36,7 +36,6 @@
             <option value="Blue Team">🔵 مدافع (Blue Team)</option>
         </select>
         <button onclick="joinMatch()">دخول المعركة</button>
-        
         <br><br>
         <button onclick="attackNode('Gateway-01')">⚡ إطلاق استغلال (Attack Node 1)</button>
     </div>
@@ -52,37 +51,37 @@
 
         function logMessage(msg) {
             const logDiv = document.getElementById('log');
-            logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
-            logDiv.scrollTop = logDiv.scrollHeight;
+            if (logDiv) {
+                logDiv.innerHTML += `<div>[${new Date().toLocaleTimeString()}] ${msg}</div>`;
+                logDiv.scrollTop = logDiv.scrollHeight;
+            }
         }
 
         function joinMatch() {
             const user = document.getElementById('username').value.trim() || "Agent_X";
             const room = document.getElementById('match_id').value.trim() || "ROOM-101";
             const role = document.getElementById('role').value;
-            
             logMessage(`✅ تم الانضمام للغرفة [${room}] كـ ${role} بواسطة العميل (${user})`);
         }
 
         function attackNode(nodeId) {
             const user = document.getElementById('username').value.trim() || "Agent_X";
-            logMessage(`💥 قام [${user}] بتنفيذ هجوم استغلال على العقدة [${nodeId}]! تم اختراق الجدار الناري بنجاح.`);
+            logMessage(`💥 قام [${user}] بتنفيذ هجوم استغلال على العقدة [${nodeId}]! تم اختراق الجدار الناري.`);
         }
 
         function buyItem(itemName, price) {
             if (currentCredits >= price) {
                 currentCredits -= price;
                 document.getElementById('credits').innerText = currentCredits;
-                logMessage(`✅ تمت ترقية العتاد بنجاح: تم تفعيل [${itemName.toUpperCase()}]! الرصيد المتبقي: $${currentCredits}`);
+                logMessage(`✅ تمت ترقية العتاد: تم تفعيل [${itemName}]! الرصيد المتبقي: $${currentCredits}`);
             } else {
-                logMessage(`❌ فشل الشراء: رصيدك غير كافٍ لاقتناء [${itemName.toUpperCase()}]!`);
+                logMessage(`❌ فشل الشراء: رصيدك الحالي ($${currentCredits}) لا يكفي لشراء [${itemName}]!`);
             }
         }
 
         window.onload = function() {
-            logMessage("🟢 تم تشغيل أنظمة CYBER TITAN بنجاح... جاهز للأوامر.");
+            logMessage("🟢 تم تشغيل أنظمة CYBER TITAN بنجاح... المحاكي جاهز للعمل.");
         };
     </script>
-    <script src="script.js"></script>
 </body>
 </html>
